@@ -1,0 +1,147 @@
+{
+  "providers": {
+    "deepseek": {
+      "modelOverrides": {
+        "deepseek-v4-flash": {
+          "thinkingLevelMap": {
+            "minimal": "low",
+            "low": "low",
+            "medium": "high",
+            "high": "high",
+            "xhigh": "high",
+            "max": "max"
+          }
+        },
+        "deepseek-v4-pro": {
+          "thinkingLevelMap": {
+            "minimal": "low",
+            "low": "low",
+            "medium": "high",
+            "high": "high",
+            "xhigh": "high",
+            "max": "max"
+          }
+        }
+      }
+    },
+    "local-qwen": {
+      "baseUrl": "http://127.0.0.1:18181/v1",
+      "api": "openai-completions",
+      "apiKey": "local",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "thinkingFormat": "chat-template",
+        "chatTemplateKwargs": {
+          "enable_thinking": { "$var": "thinking.enabled" },
+          "reasoning_effort": { "$var": "thinking.effort", "omitWhenOff": true },
+          "preserve_thinking": false
+        }
+      },
+      "models": [
+        {
+          "id": "qwen3.8-27b",
+          "name": "Qwen 3.8 27B Q4_K_M (local Metal)",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "minimal": "low",
+            "low": "low",
+            "medium": "medium",
+            "high": "xhigh",
+            "xhigh": "xhigh",
+            "max": "xhigh"
+          },
+          "input": ["text"],
+          "contextWindow": 131072,
+          "maxTokens": 32768,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 0.95,
+            "top_k": 20,
+            "min_p": 0.0,
+            "presence_penalty": 0.0,
+            "repeat_penalty": 1.0
+          }
+        }
+      ]
+    },
+    "local-glimmer": {
+      "baseUrl": "http://127.0.0.1:18182/v1",
+      "api": "openai-completions",
+      "apiKey": "local",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "thinkingFormat": "chat-template",
+        "chatTemplateKwargs": {
+          "reasoning_strength": { "$var": "thinking.effort" },
+          "preserve_thinking": false
+        }
+      },
+      "models": [
+        {
+          "id": "muse-glimmer-30b",
+          "name": "Muse Glimmer 30B dynamic quant (local Metal)",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "off": null,
+            "minimal": "low",
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "xhigh"
+          },
+          "input": ["text"],
+          "contextWindow": 65536,
+          "maxTokens": 16384,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 0.95,
+            "top_k": 64
+          }
+        }
+      ]
+    },
+    "local-gemma": {
+      "baseUrl": "http://127.0.0.1:18183/v1",
+      "api": "openai-completions",
+      "apiKey": "local",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "thinkingFormat": "chat-template",
+        "chatTemplateKwargs": {
+          "enable_thinking": { "$var": "thinking.enabled" },
+          "preserve_thinking": false
+        }
+      },
+      "models": [
+        {
+          "id": "gemma-4-12b",
+          "name": "Gemma 4 12B QAT Q4_0 (local Metal)",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": null,
+            "medium": "on",
+            "high": null,
+            "xhigh": null,
+            "max": null
+          },
+          "input": ["text"],
+          "contextWindow": 65536,
+          "maxTokens": 16384,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 0.95,
+            "top_k": 64
+          }
+        }
+      ]
+    }
+  }
+}

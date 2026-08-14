@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly PI_LAUNCHER="${PI_BIN:-$(command -v pi || true)}"
+readonly LLAMA_SERVER="${LLAMA_SERVER_BIN:-$(command -v llama-server || true)}"
+readonly MODEL_DIR="${PI_MODEL_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/pi-models}"
+readonly GLIMMER_TEMPLATE="${GLIMMER_CHAT_TEMPLATE:-${XDG_DATA_HOME:-$HOME/.local/share}/pi-agents/muse-glimmer-safe.jinja}"
+
+run_pi() {
+	if [[ -z "$PI_LAUNCHER" || ! -x "$PI_LAUNCHER" ]]; then
+		echo "Pi launcher not found. Install Pi or set PI_BIN." >&2
+		exit 1
+	fi
+	exec "$PI_LAUNCHER" "$@"
+}
+
+run_local() {
+	local provider="$1"
+	local model_id="$2"
+	local model_path="$3"
+	local port="$4"
+	local context_size="$5"
+	local -a server_args=()
+	shift 5
+	if [[ "$provider" == local-* ]]; then
+		server_args+=(--no-reasoning-preserve)
+	fi
+	if [[ "$provider" == "local-glimmer" ]]; then
+		if [[ ! -f "$GLIMMER_TEMPLATE" ]]; then
+			echo "Glimmer chat template not found: $GLIMMER_TEMPLATE" >&2
+			echo "Install templates/muse-glimmer-safe.jinja as described in README.md or set GLIMMER_CHAT_TEMPLATE." >&2
+			exit 1
+		fi
+		server_args+=(--chat-template-file "$GLIMMER_TEMPLATE")
+	fi
+
+	if [[ -z "$LLAMA_SERVER" || ! -x "$LLAMA_SERVER" ]]; then
+		echo "llama-server not found. Install llama.cpp or set LLAMA_SERVER_BIN." >&2
+		exit 1
+	fi
+	if [[ ! -f "$model_path" ]]; then
+		echo "Local model not found: $model_path" >&2
+		echo "Run the model download commands in README.md or override its *_MODEL_PATH variable." >&2
+		exit 1
+	fi
+
+	local runtime_dir="${TMPDIR:-/tmp}/pi-local-models"
+	local log_file="$runtime_dir/$model_id.log"
+	local server_pid=""
+	mkdir -p "$runtime_dir"
+	cleanup() {
+		if [[ -n "$server_pid" ]] && kill -0 "$server_pid" 2>/dev/null; then
+			kill "$server_pid" 2>/dev/null || true
+			wait "$server_pid" 2>/dev/null || true
+		fi
+	}
+
+	if curl -fsS --max-time 2 "http://127.0.0.1:$port/v1/models" 2>/dev/null | grep -Fq "\"$model_id\""; then
+		echo "Reusing $model_id on http://127.0.0.1:$port" >&2
+	else
+		if curl -fsS --max-time 2 "http://127.0.0.1:$port/health" >/dev/null 2>&1; then
+			echo "Port $port is already used by a different inference server." >&2
+			exit 1
+		fi
+
+		echo "Starting $model_id with llama.cpp Metal; log: $log_file" >&2
+		"$LLAMA_SERVER" \
+			--model "$model_path" \
+			--alias "$model_id" \
+			--host 127.0.0.1 \
+			--port "$port" \
+			--ctx-size "$context_size" \
+			--n-gpu-layers 999 \
+			--jinja \
+			--no-webui \
+			--metrics \
+			"${server_args[@]}" \
+			>"$log_file" 2>&1 &
+		server_pid=$!
+
+		trap cleanup EXIT INT TERM HUP
+
+		local attempt
+		for attempt in {1..240}; do
+			if curl -fsS --max-time 2 "http://127.0.0.1:$port/v1/models" 2>/dev/null | grep -Fq "\"$model_id\""; then
+				break
+			fi
+			if ! kill -0 "$server_pid" 2>/dev/null; then
+				echo "$model_id failed to start. Last log lines:" >&2
+				tail -40 "$log_file" >&2
+				exit 1
+			fi
+			sleep 1
+		done
+
+		if ! curl -fsS --max-time 2 "http://127.0.0.1:$port/v1/models" 2>/dev/null | grep -Fq "\"$model_id\""; then
+			echo "$model_id did not become ready within 240 seconds. Last log lines:" >&2
+			tail -40 "$log_file" >&2
+			exit 1
+		fi
+	fi
+
+	local pi_status
+	if "$PI_LAUNCHER" --provider "$provider" --model "$model_id" "$@"; then
+		pi_status=0
+	else
+		pi_status=$?
+	fi
+	cleanup
+	trap - EXIT INT TERM HUP
+	return "$pi_status"
+}
+
+run_local_agent() {
+	local provider="$1"
+	local model_id="$2"
+	local model_path="$3"
+	local port="$4"
+	local context_size="$5"
+	shift 5
+
+	local -a skill_args=(--no-skills)
+	local skill_name skill_path
+	for skill_name in agent-browser chrome-cdp frontend-design; do
+		skill_path="$HOME/.agents/skills/$skill_name"
+		if [[ -f "$skill_path/SKILL.md" ]]; then
+			skill_args+=(--skill "$skill_path")
+		fi
+	done
+
+	run_local "$provider" "$model_id" "$model_path" "$port" "$context_size" \
+		"${skill_args[@]}" "$@"
+}
+
+invoked_name="$(basename "$0")"
+case "$invoked_name" in
+	deepseek|deepseek-flash|qwen|glimmer|gemma)
+		command_name="$invoked_name"
+		;;
+	*)
+		command_name="${1:-pi}"
+		if [[ $# -gt 0 ]]; then
+			shift
+		fi
+		;;
+esac
+
+case "$command_name" in
+	pi)
+		run_pi "$@"
+		;;
+	deepseek)
+		if [[ -z "${DEEPSEEK_API_KEY:-}" ]]; then
+			echo "DEEPSEEK_API_KEY is not set." >&2
+			exit 1
+		fi
+		run_pi --provider deepseek --model deepseek-v4-pro "$@"
+		;;
+	deepseek-flash)
+		if [[ -z "${DEEPSEEK_API_KEY:-}" ]]; then
+			echo "DEEPSEEK_API_KEY is not set." >&2
+			exit 1
+		fi
+		run_pi --provider deepseek --model deepseek-v4-flash "$@"
+		;;
+	qwen)
+		run_local_agent local-qwen qwen3.8-27b \
+			"${QWEN_MODEL_PATH:-$MODEL_DIR/Qwen3.8-27B-Q4_K_M.gguf}" \
+			18181 131072 "$@"
+		;;
+	glimmer)
+		run_local_agent local-glimmer muse-glimmer-30b \
+			"${GLIMMER_MODEL_PATH:-$MODEL_DIR/muse-glimmer-30B-kquant-dynamic.gguf}" \
+			18182 65536 "$@"
+		;;
+	gemma)
+		run_local_agent local-gemma gemma-4-12b \
+			"${GEMMA_MODEL_PATH:-$MODEL_DIR/gemma-4-12b-it-qat-q4_0.gguf}" \
+			18183 65536 "$@"
+		;;
+	*)
+		echo "usage: pi-model {pi|deepseek|deepseek-flash|qwen|glimmer|gemma} [pi arguments...]" >&2
+		exit 2
+		;;
+esac

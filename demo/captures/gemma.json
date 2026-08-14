@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "scene": {
+    "slug": "gemma",
+    "command": "gemma",
+    "model": "Gemma 4 12B",
+    "provider": "LOCAL · METAL",
+    "thinking": "off",
+    "prompt": "Say hello in one warm sentence. State that you are Gemma 4 12B running locally through Pi. End exactly with: Ready locally.",
+    "prompt_display": "Say hello, tell us your model name, and say where you're running.",
+    "accent": "#F3C969"
+  },
+  "argv": [
+    "gemma",
+    "--no-session",
+    "--thinking",
+    "off",
+    "--no-tools",
+    "--no-extensions",
+    "--no-prompt-templates",
+    "--no-context-files",
+    "--mode",
+    "json",
+    "-p",
+    "Say hello in one warm sentence. State that you are Gemma 4 12B running locally through Pi. End exactly with: Ready locally."
+  ],
+  "started_at": "2026-08-14T19:41:41+0100",
+  "duration": 4.5641,
+  "first_token": 3.9195,
+  "return_code": 0,
+  "token_events": [
+    {
+      "t": 3.9195,
+      "delta": "Hello"
+    },
+    {
+      "t": 3.9372,
+      "delta": "!"
+    },
+    {
+      "t": 3.954,
+      "delta": " I"
+    },
+    {
+      "t": 3.971,
+      "delta": " am"
+    },
+    {
+      "t": 3.9878,
+      "delta": " Gemma"
+    },
+    {
+      "t": 4.0048,
+      "delta": " "
+    },
+    {
+      "t": 4.0217,
+      "delta": "4"
+    },
+    {
+      "t": 4.0387,
+      "delta": " "
+    },
+    {
+      "t": 4.0559,
+      "delta": "1"
+    },
+    {
+      "t": 4.0734,
+      "delta": "2"
+    },
+    {
+      "t": 4.0914,
+      "delta": "B"
+    },
+    {
+      "t": 4.1096,
+      "delta": " running"
+    },
+    {
+      "t": 4.1268,
+      "delta": " locally"
+    },
+    {
+      "t": 4.1435,
+      "delta": " through"
+    },
+    {
+      "t": 4.1608,
+      "delta": " Pi"
+    },
+    {
+      "t": 4.178,
+      "delta": ","
+    },
+    {
+      "t": 4.1952,
+      "delta": " and"
+    },
+    {
+      "t": 4.2122,
+      "delta": " I"
+    },
+    {
+      "t": 4.2292,
+      "delta": " am"
+    },
+    {
+      "t": 4.2463,
+      "delta": " here"
+    },
+    {
+      "t": 4.2635,
+      "delta": " to"
+    },
+    {
+      "t": 4.2807,
+      "delta": " help"
+    },
+    {
+      "t": 4.2977,
+      "delta": " you"
+    },
+    {
+      "t": 4.315,
+      "delta": " with"
+    },
+    {
+      "t": 4.3321,
+      "delta": " your"
+    },
+    {
+      "t": 4.3492,
+      "delta": " coding"
+    },
+    {
+      "t": 4.3662,
+      "delta": " tasks"
+    },
+    {
+      "t": 4.3831,
+      "delta": "."
+    },
+    {
+      "t": 4.4004,
+      "delta": " Ready"
+    },
+    {
+      "t": 4.4173,
+      "delta": " locally"
+    },
+    {
+      "t": 4.4343,
+      "delta": "."
+    }
+  ],
+  "streamed_output": "Hello! I am Gemma 4 12B running locally through Pi, and I am here to help you with your coding tasks. Ready locally."
+}

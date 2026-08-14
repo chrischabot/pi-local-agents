@@ -1,0 +1,334 @@
+{
+  "schema": 1,
+  "scene": {
+    "slug": "qwen",
+    "command": "qwen",
+    "model": "Qwen 3.8 27B",
+    "provider": "LOCAL · METAL",
+    "thinking": "off",
+    "prompt": "Without using tools, introduce this repository in exactly three short, vivid sentences. It turns Qwen, Gemma, Muse Glimmer, and DeepSeek into one-command coding agents through the lightweight Pi harness; local models start on demand, while hosted models use configured APIs. Explain why that matters, and end the third sentence exactly with: One command, one capable agent.",
+    "prompt_display": "Explain pi-agents in three vivid sentences: what it is, why Pi's lightweight harness matters, and how one-command models change the workflow.",
+    "accent": "#7FE7C4"
+  },
+  "argv": [
+    "qwen",
+    "--no-session",
+    "--thinking",
+    "off",
+    "--no-tools",
+    "--no-extensions",
+    "--no-prompt-templates",
+    "--no-context-files",
+    "--mode",
+    "json",
+    "-p",
+    "Without using tools, introduce this repository in exactly three short, vivid sentences. It turns Qwen, Gemma, Muse Glimmer, and DeepSeek into one-command coding agents through the lightweight Pi harness; local models start on demand, while hosted models use configured APIs. Explain why that matters, and end the third sentence exactly with: One command, one capable agent."
+  ],
+  "started_at": "2026-08-14T19:41:36+0100",
+  "duration": 6.2626,
+  "first_token": 3.2914,
+  "return_code": 0,
+  "token_events": [
+    {
+      "t": 3.2914,
+      "delta": "This"
+    },
+    {
+      "t": 3.3295,
+      "delta": " repository"
+    },
+    {
+      "t": 3.3663,
+      "delta": " transforms"
+    },
+    {
+      "t": 3.4029,
+      "delta": " Q"
+    },
+    {
+      "t": 3.4396,
+      "delta": "wen"
+    },
+    {
+      "t": 3.4762,
+      "delta": ","
+    },
+    {
+      "t": 3.5134,
+      "delta": " Gem"
+    },
+    {
+      "t": 3.55,
+      "delta": "ma"
+    },
+    {
+      "t": 3.5872,
+      "delta": ","
+    },
+    {
+      "t": 3.6249,
+      "delta": " Muse"
+    },
+    {
+      "t": 3.6631,
+      "delta": " G"
+    },
+    {
+      "t": 3.7006,
+      "delta": "lim"
+    },
+    {
+      "t": 3.7377,
+      "delta": "mer"
+    },
+    {
+      "t": 3.775,
+      "delta": ","
+    },
+    {
+      "t": 3.8116,
+      "delta": " and"
+    },
+    {
+      "t": 3.8483,
+      "delta": " Deep"
+    },
+    {
+      "t": 3.8849,
+      "delta": "Seek"
+    },
+    {
+      "t": 3.9215,
+      "delta": " into"
+    },
+    {
+      "t": 3.9584,
+      "delta": " one"
+    },
+    {
+      "t": 3.9962,
+      "delta": "-command"
+    },
+    {
+      "t": 4.033,
+      "delta": " coding"
+    },
+    {
+      "t": 4.0698,
+      "delta": " agents"
+    },
+    {
+      "t": 4.1067,
+      "delta": " through"
+    },
+    {
+      "t": 4.1442,
+      "delta": " the"
+    },
+    {
+      "t": 4.1818,
+      "delta": " lightweight"
+    },
+    {
+      "t": 4.2198,
+      "delta": " Pi"
+    },
+    {
+      "t": 4.2574,
+      "delta": " harness"
+    },
+    {
+      "t": 4.2954,
+      "delta": "."
+    },
+    {
+      "t": 4.3332,
+      "delta": " Local"
+    },
+    {
+      "t": 4.3707,
+      "delta": " models"
+    },
+    {
+      "t": 4.4085,
+      "delta": " spin"
+    },
+    {
+      "t": 4.4471,
+      "delta": " up"
+    },
+    {
+      "t": 4.4843,
+      "delta": " on"
+    },
+    {
+      "t": 4.5217,
+      "delta": " demand"
+    },
+    {
+      "t": 4.5587,
+      "delta": ","
+    },
+    {
+      "t": 4.5989,
+      "delta": " while"
+    },
+    {
+      "t": 4.6413,
+      "delta": " hosted"
+    },
+    {
+      "t": 4.681,
+      "delta": " models"
+    },
+    {
+      "t": 4.7182,
+      "delta": " tap"
+    },
+    {
+      "t": 4.7557,
+      "delta": " into"
+    },
+    {
+      "t": 4.7931,
+      "delta": " configured"
+    },
+    {
+      "t": 4.8306,
+      "delta": " APIs"
+    },
+    {
+      "t": 4.8681,
+      "delta": ","
+    },
+    {
+      "t": 4.9093,
+      "delta": " letting"
+    },
+    {
+      "t": 4.9462,
+      "delta": " you"
+    },
+    {
+      "t": 4.9831,
+      "delta": " deploy"
+    },
+    {
+      "t": 5.0199,
+      "delta": " serious"
+    },
+    {
+      "t": 5.0572,
+      "delta": " AI"
+    },
+    {
+      "t": 5.094,
+      "delta": " power"
+    },
+    {
+      "t": 5.1308,
+      "delta": " without"
+    },
+    {
+      "t": 5.1675,
+      "delta": " heavy"
+    },
+    {
+      "t": 5.2043,
+      "delta": " infrastructure"
+    },
+    {
+      "t": 5.2413,
+      "delta": " overhead"
+    },
+    {
+      "t": 5.2788,
+      "delta": "."
+    },
+    {
+      "t": 5.3161,
+      "delta": " That"
+    },
+    {
+      "t": 5.3535,
+      "delta": " means"
+    },
+    {
+      "t": 5.3905,
+      "delta": " serious"
+    },
+    {
+      "t": 5.428,
+      "delta": " coding"
+    },
+    {
+      "t": 5.4652,
+      "delta": " assistance"
+    },
+    {
+      "t": 5.5024,
+      "delta": " stays"
+    },
+    {
+      "t": 5.5397,
+      "delta": " fast"
+    },
+    {
+      "t": 5.5766,
+      "delta": ","
+    },
+    {
+      "t": 5.6138,
+      "delta": " flexible"
+    },
+    {
+      "t": 5.6505,
+      "delta": ","
+    },
+    {
+      "t": 5.6875,
+      "delta": " and"
+    },
+    {
+      "t": 5.7246,
+      "delta": " friction"
+    },
+    {
+      "t": 5.7616,
+      "delta": "-free"
+    },
+    {
+      "t": 5.7987,
+      "delta": "—"
+    },
+    {
+      "t": 5.8357,
+      "delta": "One"
+    },
+    {
+      "t": 5.8724,
+      "delta": " command"
+    },
+    {
+      "t": 5.9091,
+      "delta": ","
+    },
+    {
+      "t": 5.9457,
+      "delta": " one"
+    },
+    {
+      "t": 5.9826,
+      "delta": " capable"
+    },
+    {
+      "t": 6.0193,
+      "delta": " agent"
+    },
+    {
+      "t": 6.0565,
+      "delta": "."
+    }
+  ],
+  "streamed_output": "This repository transforms Qwen, Gemma, Muse Glimmer, and DeepSeek into one-command coding agents through the lightweight Pi harness. Local models spin up on demand, while hosted models tap into configured APIs, letting you deploy serious AI power without heavy infrastructure overhead. That means serious coding assistance stays fast, flexible, and friction-free—One command, one capable agent."
+}

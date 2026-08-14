@@ -1,0 +1,254 @@
+{
+  "schema": 1,
+  "scene": {
+    "slug": "deepseek-flash",
+    "command": "deepseek-flash",
+    "model": "DeepSeek V4 Flash",
+    "provider": "HOSTED · API",
+    "thinking": "low",
+    "prompt": "Create a compact, beautiful ASCII ocean wave no more than seven lines high and at most 58 characters wide. Follow it with one short goodbye line mentioning DeepSeek V4 Flash and pi-agents. Do not use a Markdown code fence. Output only the wave and goodbye line.",
+    "prompt_display": "Finish with a compact ASCII wave—and say goodbye.",
+    "accent": "#62A8FF"
+  },
+  "argv": [
+    "deepseek-flash",
+    "--no-session",
+    "--thinking",
+    "low",
+    "--no-tools",
+    "--no-extensions",
+    "--no-prompt-templates",
+    "--no-context-files",
+    "--mode",
+    "json",
+    "-p",
+    "Create a compact, beautiful ASCII ocean wave no more than seven lines high and at most 58 characters wide. Follow it with one short goodbye line mentioning DeepSeek V4 Flash and pi-agents. Do not use a Markdown code fence. Output only the wave and goodbye line."
+  ],
+  "started_at": "2026-08-14T19:42:27+0100",
+  "duration": 29.9115,
+  "first_token": 29.5059,
+  "return_code": 0,
+  "token_events": [
+    {
+      "t": 29.5059,
+      "delta": "```\n"
+    },
+    {
+      "t": 29.5293,
+      "delta": "                   "
+    },
+    {
+      "t": 29.5293,
+      "delta": " "
+    },
+    {
+      "t": 29.5293,
+      "delta": "~~~~~~~~"
+    },
+    {
+      "t": 29.5293,
+      "delta": "~~~~"
+    },
+    {
+      "t": 29.5535,
+      "delta": "~~\n"
+    },
+    {
+      "t": 29.5535,
+      "delta": "              "
+    },
+    {
+      "t": 29.5535,
+      "delta": " "
+    },
+    {
+      "t": 29.5787,
+      "delta": "~~~~"
+    },
+    {
+      "t": 29.5787,
+      "delta": "           "
+    },
+    {
+      "t": 29.5787,
+      "delta": " "
+    },
+    {
+      "t": 29.6042,
+      "delta": "~~~\n"
+    },
+    {
+      "t": 29.6042,
+      "delta": "          "
+    },
+    {
+      "t": 29.6042,
+      "delta": " "
+    },
+    {
+      "t": 29.65,
+      "delta": "~~~~"
+    },
+    {
+      "t": 29.65,
+      "delta": "                 "
+    },
+    {
+      "t": 29.65,
+      "delta": " "
+    },
+    {
+      "t": 29.6513,
+      "delta": "~~~\n"
+    },
+    {
+      "t": 29.6513,
+      "delta": "       "
+    },
+    {
+      "t": 29.6513,
+      "delta": " ~~"
+    },
+    {
+      "t": 29.6766,
+      "delta": "~"
+    },
+    {
+      "t": 29.6767,
+      "delta": "                        "
+    },
+    {
+      "t": 29.6767,
+      "delta": " ~~"
+    },
+    {
+      "t": 29.7114,
+      "delta": "\n"
+    },
+    {
+      "t": 29.7114,
+      "delta": "      "
+    },
+    {
+      "t": 29.7114,
+      "delta": " ~~"
+    },
+    {
+      "t": 29.7317,
+      "delta": "                            "
+    },
+    {
+      "t": 29.7318,
+      "delta": " ~"
+    },
+    {
+      "t": 29.7318,
+      "delta": "\n"
+    },
+    {
+      "t": 29.7318,
+      "delta": "     "
+    },
+    {
+      "t": 29.7538,
+      "delta": " ~"
+    },
+    {
+      "t": 29.7539,
+      "delta": "                               "
+    },
+    {
+      "t": 29.7539,
+      "delta": " ~"
+    },
+    {
+      "t": 29.7539,
+      "delta": "\n"
+    },
+    {
+      "t": 29.7771,
+      "delta": "    "
+    },
+    {
+      "t": 29.7771,
+      "delta": " ~"
+    },
+    {
+      "t": 29.7771,
+      "delta": "                                 "
+    },
+    {
+      "t": 29.7772,
+      "delta": " "
+    },
+    {
+      "t": 29.801,
+      "delta": "~~~~"
+    },
+    {
+      "t": 29.801,
+      "delta": "~\n"
+    },
+    {
+      "t": 29.8011,
+      "delta": "Good"
+    },
+    {
+      "t": 29.8011,
+      "delta": "bye"
+    },
+    {
+      "t": 29.8011,
+      "delta": " from"
+    },
+    {
+      "t": 29.8261,
+      "delta": " Deep"
+    },
+    {
+      "t": 29.8261,
+      "delta": "Se"
+    },
+    {
+      "t": 29.8261,
+      "delta": "ek"
+    },
+    {
+      "t": 29.8261,
+      "delta": " V"
+    },
+    {
+      "t": 29.851,
+      "delta": "4"
+    },
+    {
+      "t": 29.8511,
+      "delta": " Flash"
+    },
+    {
+      "t": 29.8511,
+      "delta": " &"
+    },
+    {
+      "t": 29.8512,
+      "delta": " pi"
+    },
+    {
+      "t": 29.8512,
+      "delta": "-ag"
+    },
+    {
+      "t": 29.8512,
+      "delta": "ents"
+    },
+    {
+      "t": 29.8898,
+      "delta": "!\n"
+    },
+    {
+      "t": 29.8898,
+      "delta": "```"
+    }
+  ],
+  "streamed_output": "```\n                    ~~~~~~~~~~~~~~\n               ~~~~            ~~~\n           ~~~~                  ~~~\n        ~~~                         ~~\n       ~~                             ~\n      ~                                ~\n     ~                                  ~~~~~\nGoodbye from DeepSeek V4 Flash & pi-agents!\n```"
+}

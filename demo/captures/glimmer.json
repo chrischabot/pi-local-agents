@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "scene": {
+    "slug": "glimmer",
+    "command": "glimmer",
+    "model": "Muse Glimmer 30B",
+    "provider": "LOCAL · METAL",
+    "thinking": "off",
+    "prompt": "Introduce yourself in one lively sentence: say hello, state that you are Muse Glimmer 30B running locally through Pi, and that you are built for action-heavy agent work. End exactly with: Built to act.",
+    "prompt_display": "Introduce yourself—and tell us what kind of agent work you love.",
+    "accent": "#C39BFF"
+  },
+  "argv": [
+    "glimmer",
+    "--no-session",
+    "--thinking",
+    "off",
+    "--no-tools",
+    "--no-extensions",
+    "--no-prompt-templates",
+    "--no-context-files",
+    "--mode",
+    "json",
+    "-p",
+    "Introduce yourself in one lively sentence: say hello, state that you are Muse Glimmer 30B running locally through Pi, and that you are built for action-heavy agent work. End exactly with: Built to act."
+  ],
+  "started_at": "2026-08-14T19:41:57+0100",
+  "duration": 16.0437,
+  "first_token": 14.898,
+  "return_code": 0,
+  "token_events": [
+    {
+      "t": 14.898,
+      "delta": "Hello"
+    },
+    {
+      "t": 14.9355,
+      "delta": "!"
+    },
+    {
+      "t": 14.9727,
+      "delta": " I'm"
+    },
+    {
+      "t": 15.0099,
+      "delta": " Muse"
+    },
+    {
+      "t": 15.047,
+      "delta": " Gl"
+    },
+    {
+      "t": 15.0843,
+      "delta": "immer"
+    },
+    {
+      "t": 15.1219,
+      "delta": " "
+    },
+    {
+      "t": 15.1596,
+      "delta": "30"
+    },
+    {
+      "t": 15.1971,
+      "delta": "B"
+    },
+    {
+      "t": 15.2355,
+      "delta": " running"
+    },
+    {
+      "t": 15.2735,
+      "delta": " locally"
+    },
+    {
+      "t": 15.3111,
+      "delta": " through"
+    },
+    {
+      "t": 15.349,
+      "delta": " Pi"
+    },
+    {
+      "t": 15.3872,
+      "delta": ","
+    },
+    {
+      "t": 15.4261,
+      "delta": " built"
+    },
+    {
+      "t": 15.4647,
+      "delta": " for"
+    },
+    {
+      "t": 15.5038,
+      "delta": " action"
+    },
+    {
+      "t": 15.5424,
+      "delta": "-he"
+    },
+    {
+      "t": 15.5805,
+      "delta": "avy"
+    },
+    {
+      "t": 15.6187,
+      "delta": " agent"
+    },
+    {
+      "t": 15.6569,
+      "delta": " work"
+    },
+    {
+      "t": 15.6953,
+      "delta": ","
+    },
+    {
+      "t": 15.7341,
+      "delta": " Built"
+    },
+    {
+      "t": 15.7732,
+      "delta": " to"
+    },
+    {
+      "t": 15.8121,
+      "delta": " act"
+    }
+  ],
+  "streamed_output": "Hello! I'm Muse Glimmer 30B running locally through Pi, built for action-heavy agent work, Built to act"
+}

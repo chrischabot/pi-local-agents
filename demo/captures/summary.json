@@ -1,0 +1,26 @@
+[
+  {
+    "scene": "qwen",
+    "duration": 6.2626,
+    "first_token": 3.2914,
+    "output": "This repository transforms Qwen, Gemma, Muse Glimmer, and DeepSeek into one-command coding agents through the lightweight Pi harness. Local models spin up on demand, while hosted models tap into configured APIs, letting you deploy serious AI power without heavy infrastructure overhead. That means serious coding assistance stays fast, flexible, and friction-free\u2014One command, one capable agent."
+  },
+  {
+    "scene": "gemma",
+    "duration": 4.5641,
+    "first_token": 3.9195,
+    "output": "Hello! I am Gemma 4 12B running locally through Pi, and I am here to help you with your coding tasks. Ready locally."
+  },
+  {
+    "scene": "glimmer",
+    "duration": 16.0437,
+    "first_token": 14.898,
+    "output": "Hello! I'm Muse Glimmer 30B running locally through Pi, built for action-heavy agent work, Built to act"
+  },
+  {
+    "scene": "deepseek-flash",
+    "duration": 29.9115,
+    "first_token": 29.5059,
+    "output": "```\n                    ~~~~~~~~~~~~~~\n               ~~~~            ~~~\n           ~~~~                  ~~~\n        ~~~                         ~~\n       ~~                             ~\n      ~                                ~\n     ~                                  ~~~~~\nGoodbye from DeepSeek V4 Flash & pi-agents!\n```"
+  }
+]
