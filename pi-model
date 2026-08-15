@@ -134,7 +134,7 @@ run_local_agent() {
 
 invoked_name="$(basename "$0")"
 case "$invoked_name" in
-	deepseek|deepseek-flash|qwen|glimmer|gemma)
+	deepseek|deepseek-flash|qwen|glimmer|gemma|nemotron)
 		command_name="$invoked_name"
 		;;
 	*)
@@ -178,8 +178,13 @@ case "$command_name" in
 			"${GEMMA_MODEL_PATH:-$MODEL_DIR/gemma-4-12b-it-qat-q4_0.gguf}" \
 			18183 65536 "$@"
 		;;
+	nemotron)
+		run_local_agent local-nemotron nemotron-3.5-lightning-30b-a3b \
+			"${NEMOTRON_MODEL_PATH:-$MODEL_DIR/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf}" \
+			18184 131072 "$@"
+		;;
 	*)
-		echo "usage: pi-model {pi|deepseek|deepseek-flash|qwen|glimmer|gemma} [pi arguments...]" >&2
+		echo "usage: pi-model {pi|deepseek|deepseek-flash|qwen|glimmer|gemma|nemotron} [pi arguments...]" >&2
 		exit 2
 		;;
 esac

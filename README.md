@@ -12,9 +12,10 @@ deepseek-flash    # faster and cheaper online work
 qwen              # strong general-purpose local coding agent
 glimmer           # local tool-driven and long-horizon agent work
 gemma             # compact local reasoning and coding
+nemotron          # fast local MoE coding and tool-use agent
 ```
 
-All five commands open the Pi TUI in the current directory. Arguments after the
+All six commands open the Pi TUI in the current directory. Arguments after the
 command are passed directly to Pi.
 
 ## Demo
@@ -28,8 +29,8 @@ capture details are in [`demo/README.md`](./demo/README.md).
 ## Quick start on Apple Silicon
 
 This path assumes a fresh macOS installation. It installs Pi and llama.cpp,
-downloads the three local models, and creates all five commands. The model files
-use about 44 GB of disk space in total. A Mac with at least 48 GB of unified memory
+downloads the four local models, and creates all six commands. The model files
+use about 63 GB of disk space in total. A Mac with at least 48 GB of unified memory
 is recommended for the supplied context sizes.
 
 ### 1. Clone this repository
@@ -78,12 +79,12 @@ install -m 755 ./pi-model "$HOME/.local/bin/pi-model"
 install -m 644 ./templates/muse-glimmer-safe.jinja \
   "$HOME/.local/share/pi-agents/muse-glimmer-safe.jinja"
 
-for command in qwen glimmer gemma deepseek deepseek-flash; do
+for command in qwen glimmer gemma nemotron deepseek deepseek-flash; do
   ln -sf "$HOME/.local/bin/pi-model" "$HOME/.local/bin/$command"
 done
 ```
 
-If `~/.pi/agent/models.json` already exists, do not overwrite it: merge the three
+If `~/.pi/agent/models.json` already exists, do not overwrite it: merge the four
 `local-*` providers from this repository's [`models.json`](./models.json) into its
 `providers` object instead.
 
@@ -107,6 +108,10 @@ curl --fail --location --retry 5 --continue-at - --progress-bar \
 curl --fail --location --retry 5 --continue-at - --progress-bar \
   --output "$PI_MODEL_DIR/gemma-4-12b-it-qat-q4_0.gguf" \
   "https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf/resolve/main/gemma-4-12b-it-qat-q4_0.gguf?download=true"
+
+curl --fail --location --retry 5 --continue-at - --progress-bar \
+  --output "$PI_MODEL_DIR/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf" \
+  "https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF/resolve/main/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf?download=true"
 ```
 
 You can download only the model you intend to use. Its corresponding alias will
@@ -143,8 +148,8 @@ gemma
 
 The first local launch can take a little while as llama.cpp maps the model and
 allocates its context. When Pi exits, the launcher stops the inference server it
-started. Try the hosted route with `deepseek-flash`, or run `qwen` and `glimmer`
-the same way.
+started. Try the hosted route with `deepseek-flash`, or run `qwen`, `glimmer`, and
+`nemotron` the same way.
 
 ## Why this exists
 
@@ -171,12 +176,12 @@ easily classified as unsafe. A prompt as ordinary as “look at authentication
 decoding” can produce a refusal instead of an analysis.
 
 None of the routes in this setup has shown that security-tripwire behavior in our
-day-to-day use. The local Qwen, Glimmer, and Gemma routes do not pass the task
-through a hosted provider's policy gate, while DeepSeek has been materially less
-refusal-prone for this work. That does not mean the models have no safety training
-or can never refuse; it means they remain available for ordinary defensive tasks
-such as tracing authentication, reviewing authorization boundaries, fixing token
-handling, auditing parsers, and validating a security patch.
+day-to-day use. The local Qwen, Glimmer, Gemma, and Nemotron routes do not pass
+the task through a hosted provider's policy gate, while DeepSeek has been
+materially less refusal-prone for this work. That does not mean the models have
+no safety training or can never refuse; it means they remain available for
+ordinary defensive tasks such as tracing authentication, reviewing authorization
+boundaries, fixing token handling, auditing parsers, and validating a security patch.
 
 For engineers responsible for the security of real systems, a model that will
 reliably inspect and repair security-sensitive code is not a niche convenience.
@@ -282,6 +287,20 @@ text path only and uses a 65K context. Adding image/audio support would require 
 matching projector and a multimodal request path; the alias should not be treated
 as visually enabled today.
 
+### Nemotron 3.5 Lightning 30B-A3B — `nemotron`
+
+[NVIDIA Nemotron 3.5 Lightning](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16)
+is a 30B-parameter mixture-of-experts model that activates about 3B parameters per
+token. NVIDIA positions its hybrid Mamba-2, attention, and MoE architecture for
+reasoning, coding, long-context work, tool use, and agentic systems. It is the
+fast local choice when the task needs a capable action loop without paying the
+compute cost of a dense 30B model on every token.
+
+This setup uses ggml-org's Q4_0 GGUF, runs its text path at a practical 131K
+context, and exposes the model's supported thinking switch as Pi's `off` and
+`medium` settings. Use it for local code navigation, iterative tool-driven fixes,
+and private agent work where speed matters.
+
 ## Choosing a command
 
 | If you need to… | Start with | Why |
@@ -291,6 +310,7 @@ as visually enabled today.
 | Work on private code without sending it to a hosted model | `qwen` | Strong general local coding model |
 | Analyze 25 commits and trace their effects through the repo | `glimmer` | Optimized for sequential tool use and recovery |
 | Explain or edit a small, well-bounded area locally | `gemma` | Fastest and smallest local generalist here |
+| Run a fast private coding or tool-use loop locally | `nemotron` | MoE activates about 3B of 30B parameters per token |
 | Compare independent approaches | Run `qwen`, then `deepseek` | Different model families and local/hosted boundaries |
 
 These are starting points, not hard routing rules. If a model repeatedly fails to
@@ -313,6 +333,7 @@ All aliases route through [`pi-model`](./pi-model):
 qwen            -> pi-model
 glimmer         -> pi-model
 gemma           -> pi-model
+nemotron        -> pi-model
 deepseek        -> pi-model
 deepseek-flash  -> pi-model
 ```
@@ -324,16 +345,18 @@ The local models use llama.cpp Metal and fixed loopback ports:
 | `qwen` | `Qwen3.8-27B-Q4_K_M.gguf` | `local-qwen` | 18181 | 131,072 |
 | `glimmer` | `muse-glimmer-30B-kquant-dynamic.gguf` | `local-glimmer` | 18182 | 65,536 |
 | `gemma` | `gemma-4-12b-it-qat-q4_0.gguf` | `local-gemma` | 18183 | 65,536 |
+| `nemotron` | `NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf` | `local-nemotron` | 18184 | 131,072 |
 
 By default, the launcher discovers `pi` and `llama-server` on `PATH` and reads the
 GGUF files from `${XDG_DATA_HOME:-$HOME/.local/share}/pi-models`. Advanced users
 can override the defaults with `PI_BIN`, `LLAMA_SERVER_BIN`, `PI_MODEL_DIR`, or the
-individual `QWEN_MODEL_PATH`, `GLIMMER_MODEL_PATH`, and `GEMMA_MODEL_PATH`
-variables. A standard installation does not need any of them.
+individual `QWEN_MODEL_PATH`, `GLIMMER_MODEL_PATH`, `GEMMA_MODEL_PATH`, and
+`NEMOTRON_MODEL_PATH` variables. A standard installation does not need any of
+them.
 
 ### Local model lifecycle
 
-Running `qwen`, `glimmer`, or `gemma`:
+Running `qwen`, `glimmer`, `gemma`, or `nemotron`:
 
 1. checks that the GGUF and llama.cpp server exist;
 2. checks whether the correct model is already listening on its assigned port;
@@ -345,7 +368,7 @@ Running `qwen`, `glimmer`, or `gemma`:
 If the correct server was already running, the launcher reuses it and does not stop
 it. Logs are written to `${TMPDIR:-/tmp}/pi-local-models`.
 
-All three local aliases start with Pi's broad skill discovery disabled. When
+All four local aliases start with Pi's broad skill discovery disabled. When
 present, only `agent-browser`, `chrome-cdp`, and `frontend-design` are added to
 their sessions. This keeps unrelated skill descriptions out of the local models'
 resident context. Add a one-off skill with, for example,
@@ -364,31 +387,37 @@ Pi exposes a common set of thinking labels, but the models do not implement the
 same control surface. [`models.json`](./models.json) maps each Pi label to a value
 the selected model actually supports:
 
-| Pi label | DeepSeek V4 Flash/Pro | Qwen 3.8 | Muse Glimmer | Gemma 4 |
-| --- | --- | --- | --- | --- |
-| `off` | disabled | disabled | unavailable | disabled |
-| `minimal` | `low` | `low` | `low` | unavailable |
-| `low` | `low` | `low` | `low` | unavailable |
-| `medium` | `high` | `medium` | `medium` | enabled |
-| `high` | `high` | `xhigh` | `high` | unavailable |
-| `xhigh` | `high` | `xhigh` | `xhigh` | unavailable |
-| `max` | `max` | `xhigh` | `xhigh` | unavailable |
+| Pi label | DeepSeek V4 Flash/Pro | Qwen 3.8 | Muse Glimmer | Gemma 4 | Nemotron 3.5 |
+| --- | --- | --- | --- | --- | --- |
+| `off` | disabled | disabled | unavailable | disabled | disabled |
+| `minimal` | `low` | `low` | `low` | unavailable | unavailable |
+| `low` | `low` | `low` | `low` | unavailable | unavailable |
+| `medium` | `high` | `medium` | `medium` | enabled | enabled |
+| `high` | `high` | `xhigh` | `high` | unavailable | unavailable |
+| `xhigh` | `high` | `xhigh` | `xhigh` | unavailable | unavailable |
+| `max` | `max` | `xhigh` | `xhigh` | unavailable | unavailable |
 
 The Pi footer shows the Pi-side label. For example, `deepseek --thinking medium`
 displays `medium` while sending DeepSeek's documented `high` effort, and
 `qwen --thinking high` sends Qwen's `xhigh`. Glimmer does not have a reliable
 non-reasoning mode, so `off` is deliberately hidden. Gemma exposes only a switch,
 so Pi offers `off` and `medium` (enabled) instead of pretending that several
-effort levels are distinct. These mappings follow the model developers'
+effort levels are distinct. Nemotron likewise exposes a thinking switch, so it
+offers only `off` and `medium`. These mappings follow the model developers'
 [DeepSeek](https://api-docs.deepseek.com/guides/thinking_mode/),
 [Qwen](https://huggingface.co/Qwen/Qwen3.8-27B),
-[Glimmer](https://huggingface.co/meta-models/Muse-Glimmer-30B), and
-[Gemma](https://huggingface.co/google/gemma-4-12B-it) guidance.
+[Glimmer](https://huggingface.co/meta-models/Muse-Glimmer-30B),
+[Gemma](https://huggingface.co/google/gemma-4-12B-it), and
+[Nemotron](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16)
+guidance.
 
 The local routes do not replay hidden reasoning across completed user turns:
 
 - Qwen receives `preserve_thinking=false` through its chat-template arguments.
 - Gemma's canonical template strips old thoughts; the setting is also explicit.
+- Nemotron's canonical template receives `truncate_history_thinking=true`, which
+  strips older thoughts while retaining the current tool-call chain. It also gets
+  NVIDIA's recommended `force_nonempty_content=true` agent setting.
 - Glimmer uses the adapter above because its upstream template does not honor the
   flag. Current-turn reasoning is still preserved across tool calls.
 
@@ -406,7 +435,8 @@ completed turns.
 
 The local sampling defaults also follow the model cards: Qwen thinking mode uses
 `temperature=1.0`, `top_p=0.95`, and `top_k=20`; Glimmer and Gemma use
-`temperature=1.0`, `top_p=0.95`, and `top_k=64`. Qwen's alias is optimized for
+`temperature=1.0`, `top_p=0.95`, and `top_k=64`; Nemotron uses its documented
+`temperature=1.0` and `top_p=0.95`. Qwen's alias is optimized for
 normal thinking-enabled agent use. Its model card recommends different sampling
 for non-thinking chat, which this static Pi model entry does not switch dynamically.
 
@@ -427,7 +457,8 @@ PI_PROVIDER=local-qwen
 ```
 
 The other aliases report `local-glimmer` / `muse-glimmer-30b`, `local-gemma` /
-`gemma-4-12b`, or `deepseek` with the selected V4 model. This setup injects no
+`gemma-4-12b`, `local-nemotron` / `nemotron-3.5-lightning-30b-a3b`, or `deepseek`
+with the selected V4 model. This setup injects no
 Claude or Opus identity statement. If an older saved conversation already contains
 a false visible identity claim, start a fresh session after updating; replay
 controls cannot erase text that is intentionally part of a resumed conversation.
@@ -475,6 +506,8 @@ qwen --thinking high             # maps to Qwen xhigh
 glimmer --thinking xhigh
 gemma --thinking medium          # Gemma thinking on
 gemma --thinking off             # Gemma thinking off
+nemotron --thinking medium       # Nemotron thinking on
+nemotron --thinking off          # Nemotron thinking off
 ```
 
 Pass any other Pi option through normally:
@@ -522,4 +555,6 @@ host-native Metal path.
 - [Qwen 3.8 27B model card](https://huggingface.co/Qwen/Qwen3.8-27B)
 - [Muse Glimmer 30B model card](https://huggingface.co/meta-models/Muse-Glimmer-30B)
 - [Gemma 4 12B model card](https://huggingface.co/google/gemma-4-12B-it)
+- [NVIDIA Nemotron 3.5 Lightning 30B-A3B model card](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16)
+- [ggml-org Nemotron 3.5 Lightning GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF)
 - [CUA macOS VM Metal results](https://github.com/trycua/cua/blob/main/blog/gpu-passthrough-macos-vms.md)

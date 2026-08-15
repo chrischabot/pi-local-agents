@@ -142,6 +142,44 @@
           }
         }
       ]
+    },
+    "local-nemotron": {
+      "baseUrl": "http://127.0.0.1:18184/v1",
+      "api": "openai-completions",
+      "apiKey": "local",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "thinkingFormat": "chat-template",
+        "chatTemplateKwargs": {
+          "enable_thinking": { "$var": "thinking.enabled" },
+          "force_nonempty_content": true,
+          "truncate_history_thinking": true
+        }
+      },
+      "models": [
+        {
+          "id": "nemotron-3.5-lightning-30b-a3b",
+          "name": "Nemotron 3.5 Lightning 30B-A3B Q4_0 (local Metal)",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": null,
+            "medium": "on",
+            "high": null,
+            "xhigh": null,
+            "max": null
+          },
+          "input": ["text"],
+          "contextWindow": 131072,
+          "maxTokens": 32768,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 0.95
+          }
+        }
+      ]
     }
   }
 }
