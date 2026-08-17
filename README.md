@@ -20,11 +20,13 @@ command are passed directly to Pi.
 
 ## Demo
 
-[Watch the 37-second pi-agents intro](./demo/pi-agents-intro.mp4): Qwen explains
-the setup, Gemma and Muse Glimmer introduce their local runtimes, and DeepSeek
-V4 Flash signs off with an ASCII wave. The model output and token timing are
-genuine; only the waits before each first token are shortened. Reproduction and
-capture details are in [`demo/README.md`](./demo/README.md).
+[![37-second pi-agents terminal demo](./demo/pi-agents-intro.gif)](./demo/pi-agents-intro.mp4)
+
+Qwen explains the setup, Gemma and Muse Glimmer introduce their local runtimes,
+and DeepSeek V4 Flash signs off with an ASCII wave. The model output and token
+timing are genuine; only the waits before each first token are shortened. Click
+the animation for the [higher-quality MP4](./demo/pi-agents-intro.mp4).
+Reproduction and capture details are in [`demo/README.md`](./demo/README.md).
 
 ## Quick start on Apple Silicon
 
