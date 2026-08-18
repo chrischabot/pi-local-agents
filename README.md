@@ -10,12 +10,13 @@ local inference only when it is needed, and reduces model selection to a command
 deepseek          # difficult, high-stakes coding and reasoning
 deepseek-flash    # faster and cheaper online work
 qwen              # strong general-purpose local coding agent
+qwen-uncensored   # refusal-removed Qwen for controlled security research
 glimmer           # local tool-driven and long-horizon agent work
 gemma             # compact local reasoning and coding
 nemotron          # fast local MoE coding and tool-use agent
 ```
 
-All six commands open the Pi TUI in the current directory. Arguments after the
+All seven commands open the Pi TUI in the current directory. Arguments after the
 command are passed directly to Pi.
 
 ## Demo
@@ -30,10 +31,10 @@ Reproduction and capture details are in [`demo/README.md`](./demo/README.md).
 
 ## Quick start on Apple Silicon
 
-This path assumes a fresh macOS installation. It installs Pi and llama.cpp,
-downloads the four local models, and creates all six commands. The model files
-use about 63 GB of disk space in total. A Mac with at least 48 GB of unified memory
-is recommended for the supplied context sizes.
+This path assumes a fresh macOS installation. It installs Pi, llama.cpp, and
+MLX-VLM, downloads the five local models, and creates all seven commands. The
+model files use about 85 GB of disk space in total. A Mac with at least 64 GB of
+unified memory is recommended for the supplied context sizes.
 
 ### 1. Clone this repository
 
@@ -44,20 +45,22 @@ git clone "$(pbpaste)" pi-agents
 cd pi-agents
 ```
 
-### 2. Install Pi and llama.cpp
+### 2. Install Pi and local inference servers
 
 With [Homebrew](https://brew.sh/) already installed:
 
 ```bash
-brew install node llama.cpp
+brew install node llama.cpp uv
 npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+uv tool install mlx-vlm --with huggingface-hub --with jinja2
 ```
 
-Check that both commands are available:
+Check that the three commands are available:
 
 ```bash
 pi --version
 llama-server --version
+mlx_vlm.server --help
 ```
 
 Pi's official documentation also provides a
@@ -81,12 +84,13 @@ install -m 755 ./pi-model "$HOME/.local/bin/pi-model"
 install -m 644 ./templates/muse-glimmer-safe.jinja \
   "$HOME/.local/share/pi-agents/muse-glimmer-safe.jinja"
 
-for command in qwen glimmer gemma nemotron deepseek deepseek-flash; do
+commands=(qwen qwen-uncensored glimmer gemma nemotron deepseek deepseek-flash)
+for command in "${commands[@]}"; do
   ln -sf "$HOME/.local/bin/pi-model" "$HOME/.local/bin/$command"
 done
 ```
 
-If `~/.pi/agent/models.json` already exists, do not overwrite it: merge the four
+If `~/.pi/agent/models.json` already exists, do not overwrite it: merge the five
 `local-*` providers from this repository's [`models.json`](./models.json) into its
 `providers` object instead.
 
@@ -114,6 +118,21 @@ curl --fail --location --retry 5 --continue-at - --progress-bar \
 curl --fail --location --retry 5 --continue-at - --progress-bar \
   --output "$PI_MODEL_DIR/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf" \
   "https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF/resolve/main/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf?download=true"
+```
+
+The `qwen-uncensored` model requires a Hugging Face account and access approval.
+Open the [Qwen 3.8 27B Uncensored MLX model card](https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-MLX),
+sign in, review the risks, and accept the access conditions. Then run the
+following commands. The first command opens a browser to authorize a local read
+token:
+
+```bash
+uvx --from huggingface-hub hf auth login
+
+uvx --from huggingface-hub hf download \
+  orcarouter/Qwen3.8-27B-Uncensored-MLX \
+  --include "6-bit/*" \
+  --local-dir "$PI_MODEL_DIR/Qwen3.8-27B-Uncensored-MLX"
 ```
 
 You can download only the model you intend to use. Its corresponding alias will
@@ -150,8 +169,8 @@ gemma
 
 The first local launch can take a little while as llama.cpp maps the model and
 allocates its context. When Pi exits, the launcher stops the inference server it
-started. Try the hosted route with `deepseek-flash`, or run `qwen`, `glimmer`, and
-`nemotron` the same way.
+started. Try the hosted route with `deepseek-flash`, or run `qwen`,
+`qwen-uncensored`, `glimmer`, and `nemotron` the same way.
 
 ## Why this exists
 
@@ -263,6 +282,21 @@ this setup runs its text path at 131K using a Q4_K_M GGUF.
 Use Qwen as the general local coding agent: implementation, refactoring, repo-level
 analysis, or a private second opinion on work first attempted with a hosted model.
 
+### Qwen 3.8 27B Uncensored 6-bit — `qwen-uncensored`
+
+[Qwen 3.8 27B Uncensored MLX](https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-MLX)
+is an abliterated build of Qwen 3.8 27B. Abliteration removes much of the base
+model's refusal behavior. OrcaRouter provides 2-bit, 4-bit, 6-bit, and 8-bit MLX
+quantizations for Apple silicon. This setup uses 6-bit weights because the model
+card reports near-source numerical fidelity and a strong quality-to-size balance
+at about 22 GB.
+
+Use this route for controlled defensive security research, refusal-mechanism
+evaluation, and tasks where policy false positives prevent legitimate engineering
+work. Don't expose it to end users or untrusted inputs. The publisher states that
+the model has no meaningful built-in guardrails and can comply with harmful,
+illegal, or false requests. You remain responsible for every command that Pi runs.
+
 ### Muse Glimmer 30B — `glimmer`
 
 [Muse Glimmer](https://huggingface.co/meta-models/Muse-Glimmer-30B) is explicitly
@@ -310,6 +344,7 @@ and private agent work where speed matters.
 | Implement or review a security-sensitive feature | `deepseek` | Highest-capability online reasoning route in this setup |
 | Fix a contained bug or triage failing tests quickly | `deepseek-flash` | Fast, economical agent loop |
 | Work on private code without sending it to a hosted model | `qwen` | Strong general local coding model |
+| Run controlled defensive research without model-level refusal behavior | `qwen-uncensored` | Abliterated Qwen with 6-bit MLX weights |
 | Analyze 25 commits and trace their effects through the repo | `glimmer` | Optimized for sequential tool use and recovery |
 | Explain or edit a small, well-bounded area locally | `gemma` | Fastest and smallest local generalist here |
 | Run a fast private coding or tool-use loop locally | `nemotron` | MoE activates about 3B of 30B parameters per token |
@@ -333,6 +368,7 @@ All aliases route through [`pi-model`](./pi-model):
 
 ```text
 qwen            -> pi-model
+qwen-uncensored -> pi-model
 glimmer         -> pi-model
 gemma           -> pi-model
 nemotron        -> pi-model
@@ -340,29 +376,32 @@ deepseek        -> pi-model
 deepseek-flash  -> pi-model
 ```
 
-The local models use llama.cpp Metal and fixed loopback ports:
+The local models use Metal inference servers and fixed loopback ports. The
+following table shows each route:
 
 | Command | Model file | Provider | Port | Pi context |
 | --- | --- | --- | ---: | ---: |
 | `qwen` | `Qwen3.8-27B-Q4_K_M.gguf` | `local-qwen` | 18181 | 131,072 |
+| `qwen-uncensored` | `Qwen3.8-27B-Uncensored-MLX/6-bit` | `local-qwen-uncensored` | 18185 | 131,072 |
 | `glimmer` | `muse-glimmer-30B-kquant-dynamic.gguf` | `local-glimmer` | 18182 | 65,536 |
 | `gemma` | `gemma-4-12b-it-qat-q4_0.gguf` | `local-gemma` | 18183 | 65,536 |
 | `nemotron` | `NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf` | `local-nemotron` | 18184 | 131,072 |
 
-By default, the launcher discovers `pi` and `llama-server` on `PATH` and reads the
-GGUF files from `${XDG_DATA_HOME:-$HOME/.local/share}/pi-models`. Advanced users
-can override the defaults with `PI_BIN`, `LLAMA_SERVER_BIN`, `PI_MODEL_DIR`, or the
-individual `QWEN_MODEL_PATH`, `GLIMMER_MODEL_PATH`, `GEMMA_MODEL_PATH`, and
-`NEMOTRON_MODEL_PATH` variables. A standard installation does not need any of
-them.
+By default, the launcher discovers `pi`, `llama-server`, and `mlx_vlm.server` on
+`PATH`. It reads local models from
+`${XDG_DATA_HOME:-$HOME/.local/share}/pi-models`. Advanced users can override the
+defaults with `PI_BIN`, `LLAMA_SERVER_BIN`, `MLX_VLM_SERVER_BIN`, `PI_MODEL_DIR`,
+or the individual `QWEN_MODEL_PATH`, `QWEN_UNCENSORED_MODEL_PATH`,
+`GLIMMER_MODEL_PATH`, `GEMMA_MODEL_PATH`, and `NEMOTRON_MODEL_PATH` variables.
+A standard installation does not need any of them.
 
 ### Local model lifecycle
 
-Running `qwen`, `glimmer`, `gemma`, or `nemotron`:
+Running `qwen`, `qwen-uncensored`, `glimmer`, `gemma`, or `nemotron`:
 
-1. checks that the GGUF and llama.cpp server exist;
+1. checks that the required model files and inference server exist;
 2. checks whether the correct model is already listening on its assigned port;
-3. otherwise starts a loopback-only `llama-server` with Metal GPU offload;
+3. otherwise starts a loopback-only inference server with Metal GPU offload;
 4. waits for the OpenAI-compatible endpoint to become ready;
 5. starts Pi with the matching provider and model selected;
 6. stops the server it owns when Pi exits.
@@ -370,7 +409,13 @@ Running `qwen`, `glimmer`, `gemma`, or `nemotron`:
 If the correct server was already running, the launcher reuses it and does not stop
 it. Logs are written to `${TMPDIR:-/tmp}/pi-local-models`.
 
-All four local aliases start with Pi's broad skill discovery disabled. When
+The GGUF routes use llama.cpp. The `qwen-uncensored` route uses MLX-VLM with an
+8-bit KV cache, one concurrent sequence, and a 131,072-token cache limit. The
+launcher creates a temporary model overlay that disables completed-turn reasoning
+replay without modifying the downloaded model, binds both servers to `127.0.0.1`,
+and stops the process that it starts.
+
+All five local aliases start with Pi's broad skill discovery disabled. When
 present, only `agent-browser`, `chrome-cdp`, and `frontend-design` are added to
 their sessions. This keeps unrelated skill descriptions out of the local models'
 resident context. Add a one-off skill with, for example,
@@ -389,7 +434,7 @@ Pi exposes a common set of thinking labels, but the models do not implement the
 same control surface. [`models.json`](./models.json) maps each Pi label to a value
 the selected model actually supports:
 
-| Pi label | DeepSeek V4 Flash/Pro | Qwen 3.8 | Muse Glimmer | Gemma 4 | Nemotron 3.5 |
+| Pi label | DeepSeek V4 Flash/Pro | Qwen 3.8 routes | Muse Glimmer | Gemma 4 | Nemotron 3.5 |
 | --- | --- | --- | --- | --- | --- |
 | `off` | disabled | disabled | unavailable | disabled | disabled |
 | `minimal` | `low` | `low` | `low` | unavailable | unavailable |
@@ -416,6 +461,9 @@ guidance.
 The local routes do not replay hidden reasoning across completed user turns:
 
 - Qwen receives `preserve_thinking=false` through its chat-template arguments.
+- Qwen Uncensored uses MLX-VLM's top-level thinking control. Its upstream template
+  preserves earlier reasoning by default, so the launcher changes that default in
+  a temporary overlay. It retains only reasoning from the current tool-call chain.
 - Gemma's canonical template strips old thoughts; the setting is also explicit.
 - Nemotron's canonical template receives `truncate_history_thinking=true`, which
   strips older thoughts while retaining the current tool-call chain. It also gets
@@ -435,7 +483,7 @@ preserves that field according to the API contract. It remains an assistant-mess
 field, not an injected system prompt; DeepSeek ignores reasoning from ordinary
 completed turns.
 
-The local sampling defaults also follow the model cards: Qwen thinking mode uses
+The local sampling defaults also follow the model cards: both Qwen routes use
 `temperature=1.0`, `top_p=0.95`, and `top_k=20`; Glimmer and Gemma use
 `temperature=1.0`, `top_p=0.95`, and `top_k=64`; Nemotron uses its documented
 `temperature=1.0` and `top_p=0.95`. Qwen's alias is optimized for
@@ -458,7 +506,8 @@ PI_MODEL=qwen3.8-27b
 PI_PROVIDER=local-qwen
 ```
 
-The other aliases report `local-glimmer` / `muse-glimmer-30b`, `local-gemma` /
+The other aliases report `local-qwen-uncensored` /
+`qwen3.8-27b-uncensored-6bit`, `local-glimmer` / `muse-glimmer-30b`, `local-gemma` /
 `gemma-4-12b`, `local-nemotron` / `nemotron-3.5-lightning-30b-a3b`, or `deepseek`
 with the selected V4 model. This setup injects no
 Claude or Opus identity statement. If an older saved conversation already contains
@@ -505,6 +554,7 @@ Select a thinking level:
 deepseek --thinking max
 deepseek-flash --thinking low -p "Diagnose this failing test: ..."
 qwen --thinking high             # maps to Qwen xhigh
+qwen-uncensored --thinking high  # maps to Qwen xhigh
 glimmer --thinking xhigh
 gemma --thinking medium          # Gemma thinking on
 gemma --thinking off             # Gemma thinking off
@@ -516,6 +566,7 @@ Pass any other Pi option through normally:
 
 ```bash
 qwen --no-session
+qwen-uncensored --tools read,bash -p "Review this parser for unsafe input handling."
 gemma --tools read,bash -p "Explain why this build fails without editing files."
 pi --list-models
 pi --help
@@ -533,6 +584,11 @@ explicitly in its [containerization guide](https://github.com/earendil-works/pi/
 The hosted DeepSeek aliases add a second boundary: conversation content and tool
 results selected by the agent are sent to DeepSeek. Prefer a local alias for private
 material that must not leave the machine.
+
+The `qwen-uncensored` route removes an additional safety boundary. The model card
+states that abliteration substantially removes safety alignment and refusal
+behavior. Run it only in a controlled development environment. Don't give it
+credentials, production access, or broader tools than the task requires.
 
 ## Why CUA VM acceleration is not enabled
 
@@ -555,6 +611,8 @@ host-native Metal path.
 - [DeepSeek V4 release](https://api-docs.deepseek.com/news/news260424/)
 - [DeepSeek API models and pricing](https://api-docs.deepseek.com/quick_start/pricing/)
 - [Qwen 3.8 27B model card](https://huggingface.co/Qwen/Qwen3.8-27B)
+- [Qwen 3.8 27B Uncensored MLX model card](https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-MLX)
+- [MLX-VLM server](https://github.com/Blaizzy/mlx-vlm#server-fastapi)
 - [Muse Glimmer 30B model card](https://huggingface.co/meta-models/Muse-Glimmer-30B)
 - [Gemma 4 12B model card](https://huggingface.co/google/gemma-4-12B-it)
 - [NVIDIA Nemotron 3.5 Lightning 30B-A3B model card](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16)

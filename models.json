@@ -66,6 +66,43 @@
         }
       ]
     },
+    "local-qwen-uncensored": {
+      "baseUrl": "http://127.0.0.1:18185/v1",
+      "api": "openai-completions",
+      "apiKey": "local",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": true,
+        "thinkingFormat": "qwen"
+      },
+      "models": [
+        {
+          "id": "qwen3.8-27b-uncensored-6bit",
+          "name": "Qwen 3.8 27B Uncensored 6-bit (local MLX Metal)",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "minimal": "low",
+            "low": "low",
+            "medium": "medium",
+            "high": "xhigh",
+            "xhigh": "xhigh",
+            "max": "xhigh"
+          },
+          "input": ["text", "image"],
+          "contextWindow": 131072,
+          "maxTokens": 32768,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 0.95,
+            "top_k": 20,
+            "min_p": 0.0,
+            "presence_penalty": 0.0,
+            "repetition_penalty": 1.0
+          }
+        }
+      ]
+    },
     "local-glimmer": {
       "baseUrl": "http://127.0.0.1:18182/v1",
       "api": "openai-completions",

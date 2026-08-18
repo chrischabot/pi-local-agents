@@ -3,6 +3,7 @@ set -euo pipefail
 
 readonly PI_LAUNCHER="${PI_BIN:-$(command -v pi || true)}"
 readonly LLAMA_SERVER="${LLAMA_SERVER_BIN:-$(command -v llama-server || true)}"
+readonly MLX_VLM_SERVER="${MLX_VLM_SERVER_BIN:-$(command -v mlx_vlm.server || true)}"
 readonly MODEL_DIR="${PI_MODEL_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/pi-models}"
 readonly GLIMMER_TEMPLATE="${GLIMMER_CHAT_TEMPLATE:-${XDG_DATA_HOME:-$HOME/.local/share}/pi-agents/muse-glimmer-safe.jinja}"
 
@@ -132,9 +133,145 @@ run_local_agent() {
 		"${skill_args[@]}" "$@"
 }
 
+run_mlx_agent() {
+	local provider="$1"
+	local model_id="$2"
+	local model_path="$3"
+	local port="$4"
+	local context_size="$5"
+	shift 5
+
+	if [[ -z "$MLX_VLM_SERVER" || ! -x "$MLX_VLM_SERVER" ]]; then
+		echo "mlx_vlm.server not found. Install mlx-vlm or set MLX_VLM_SERVER_BIN." >&2
+		exit 1
+	fi
+	if [[ ! -d "$model_path" ]]; then
+		echo "Local MLX model not found: $model_path" >&2
+		echo "Run the qwen-uncensored download command in README.md or set QWEN_UNCENSORED_MODEL_PATH." >&2
+		exit 1
+	fi
+
+	local runtime_dir="${TMPDIR:-/tmp}/pi-local-models"
+	local runtime_model="$runtime_dir/$model_id"
+	local log_file="$runtime_dir/$model_id.log"
+	local server_pid=""
+	local owns_runtime_model="false"
+	mkdir -p "$runtime_dir"
+
+	remove_runtime_model() {
+		if [[ "$owns_runtime_model" == "true" && -d "$runtime_model" ]]; then
+			find "$runtime_model" -mindepth 1 -maxdepth 1 -delete
+			rmdir "$runtime_model"
+		fi
+	}
+
+	cleanup_mlx() {
+		if [[ -n "$server_pid" ]] && kill -0 "$server_pid" 2>/dev/null; then
+			kill "$server_pid" 2>/dev/null || true
+			wait "$server_pid" 2>/dev/null || true
+		fi
+		remove_runtime_model
+	}
+
+	if curl -fsS --max-time 2 "http://127.0.0.1:$port/health" 2>/dev/null | grep -Fq "$model_id"; then
+		echo "Reusing $model_id on http://127.0.0.1:$port" >&2
+	else
+		if curl -fsS --max-time 2 "http://127.0.0.1:$port/health" >/dev/null 2>&1; then
+			echo "Port $port is already used by a different inference server." >&2
+			exit 1
+		fi
+
+		local source_template="$model_path/chat_template.jinja"
+		if [[ ! -f "$source_template" ]]; then
+			echo "Qwen chat template not found: $source_template" >&2
+			exit 1
+		fi
+		if [[ -e "$runtime_model" || -L "$runtime_model" ]]; then
+			echo "Stale MLX runtime model exists: $runtime_model" >&2
+			echo "Remove it after confirming no qwen-uncensored process is running." >&2
+			exit 1
+		fi
+
+		mkdir "$runtime_model"
+		owns_runtime_model="true"
+		trap cleanup_mlx EXIT INT TERM HUP
+		local model_file model_name
+		for model_file in "$model_path"/*; do
+			model_name="$(basename "$model_file")"
+			if [[ "$model_name" != "chat_template.jinja" ]]; then
+				ln -s "$model_file" "$runtime_model/$model_name"
+			fi
+		done
+		sed \
+			's/preserve_thinking is undefined or preserve_thinking is true or loop.index0 > ns.last_query_index/preserve_thinking is defined and preserve_thinking is true or loop.index0 > ns.last_query_index/' \
+			"$source_template" >"$runtime_model/chat_template.jinja"
+		if grep -Fq 'preserve_thinking is undefined or preserve_thinking is true' \
+			"$runtime_model/chat_template.jinja"; then
+			echo "Could not disable completed-turn reasoning replay in the Qwen chat template." >&2
+			exit 1
+		fi
+
+		echo "Starting $model_id with MLX Metal; log: $log_file" >&2
+		(
+			cd "$runtime_dir"
+			exec "$MLX_VLM_SERVER" \
+				--model "$model_id" \
+				--host 127.0.0.1 \
+				--port "$port" \
+				--max-tokens 32768 \
+				--kv-bits 8 \
+				--kv-group-size 64 \
+				--max-kv-size "$context_size" \
+				--max-num-seqs 1 \
+				--vision-cache-size 2 \
+				--log-level INFO
+		) >"$log_file" 2>&1 &
+		server_pid=$!
+
+		local attempt
+		for attempt in {1..600}; do
+			if curl -fsS --max-time 2 "http://127.0.0.1:$port/health" 2>/dev/null | grep -Fq "$model_id"; then
+				break
+			fi
+			if ! kill -0 "$server_pid" 2>/dev/null; then
+				echo "$model_id failed to start. Last log lines:" >&2
+				tail -40 "$log_file" >&2
+				exit 1
+			fi
+			sleep 1
+		done
+
+		if ! curl -fsS --max-time 2 "http://127.0.0.1:$port/health" 2>/dev/null | grep -Fq "$model_id"; then
+			echo "$model_id did not become ready within 600 seconds. Last log lines:" >&2
+			tail -40 "$log_file" >&2
+			exit 1
+		fi
+	fi
+
+	local -a skill_args=(--no-skills)
+	local skill_name skill_path
+	for skill_name in agent-browser chrome-cdp frontend-design; do
+		skill_path="$HOME/.agents/skills/$skill_name"
+		if [[ -f "$skill_path/SKILL.md" ]]; then
+			skill_args+=(--skill "$skill_path")
+		fi
+	done
+
+	local pi_status
+	if "$PI_LAUNCHER" --provider "$provider" --model "$model_id" \
+		"${skill_args[@]}" "$@"; then
+		pi_status=0
+	else
+		pi_status=$?
+	fi
+	cleanup_mlx
+	trap - EXIT INT TERM HUP
+	return "$pi_status"
+}
+
 invoked_name="$(basename "$0")"
 case "$invoked_name" in
-	deepseek|deepseek-flash|qwen|glimmer|gemma|nemotron)
+	deepseek|deepseek-flash|qwen|qwen-uncensored|glimmer|gemma|nemotron)
 		command_name="$invoked_name"
 		;;
 	*)
@@ -168,6 +305,11 @@ case "$command_name" in
 			"${QWEN_MODEL_PATH:-$MODEL_DIR/Qwen3.8-27B-Q4_K_M.gguf}" \
 			18181 131072 "$@"
 		;;
+	qwen-uncensored)
+		run_mlx_agent local-qwen-uncensored qwen3.8-27b-uncensored-6bit \
+			"${QWEN_UNCENSORED_MODEL_PATH:-$MODEL_DIR/Qwen3.8-27B-Uncensored-MLX/6-bit}" \
+			18185 131072 "$@"
+		;;
 	glimmer)
 		run_local_agent local-glimmer muse-glimmer-30b \
 			"${GLIMMER_MODEL_PATH:-$MODEL_DIR/muse-glimmer-30B-kquant-dynamic.gguf}" \
@@ -184,7 +326,7 @@ case "$command_name" in
 			18184 131072 "$@"
 		;;
 	*)
-		echo "usage: pi-model {pi|deepseek|deepseek-flash|qwen|glimmer|gemma|nemotron} [pi arguments...]" >&2
+		echo "usage: pi-model {pi|deepseek|deepseek-flash|qwen|qwen-uncensored|glimmer|gemma|nemotron} [pi arguments...]" >&2
 		exit 2
 		;;
 esac
