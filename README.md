@@ -245,6 +245,10 @@ There is no build step or test suite: the repository is a Bash launcher, a Pi co
 
 The demo's capture step needs the commands it films to be working, and its renderer expects Pillow, macOS system fonts and Homebrew's `ffmpeg` at `/opt/homebrew/bin/ffmpeg`.
 
+## Project background
+
+- [pi-local-agents project overview](https://chabot.dev/projects/#pi-local-agents) on Chris Chabot’s site.
+
 ## Credits and license
 
 The launcher, configuration and demo tooling in this repository are available under the [MIT License](./LICENSE), copyright 2026 Chris Chabot.
